@@ -92,4 +92,5 @@ if __name__ == '__main__':
         list_alb = input("Enter Album:\n").lower()
 
         #write_album_image(find_albums_from_title(list_alb, list_art))
-        print(find_album_from_title(list_alb, list_art))
+        obj = find_album_from_title(list_alb, list_art)
+        print(cover_formula(obj))

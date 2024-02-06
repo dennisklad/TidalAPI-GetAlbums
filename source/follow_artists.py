@@ -3,24 +3,20 @@ import oauth_login
 
 session = oauth_login.get_tidalapi_session()
 
-fav         = tidalapi.Favorites(session, session.user.id)
-fav_albums  = fav.albums()
-fav_artists = fav.artists()
+fav = tidalapi.Favorites(session, session.user.id)
 
+# Artists already saved in favorites
+fav_artists = [artist.name for artist in fav.artists()]
+
+# Artists from favorite albums
 artists_from_fav_albums = []
-artist_names = []
+for album in fav.albums():
+    for artist in album.artists:
+        artists_from_fav_albums.append(artist)
 
-for album in fav_albums:
-    [artists_from_fav_albums.append(artist) for artist in album.artists]
-
-for artist in fav_artists:
-    artist_names.append(artist.name)
-
+# Favorite artists from albums that are not in favorites
 for artist in artists_from_fav_albums:
-    # print("Checking if you follow", artist.name)
-    
-    if not artist.name in artist_names:
+    # Checking if you follow artist
+    if not artist.name in fav_artists:
         print("You are now following", artist.name)
         fav.add_artist(artist.id)
-        
-# print(f"{album:80} by {artist}")

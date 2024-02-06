@@ -5,6 +5,9 @@ import csv
 
 session = oauth_login.get_tidalapi_session()
 
+# I removed some formulas from excel by accident. 
+# This script generates the formula for all albums in `Images.tsv`
+
 links = []
 titles = []
 artists = []
@@ -14,9 +17,9 @@ out = []
 with open('Images.tsv', 'r') as fin:
     next(fin) # Skip first line
     for row in fin:
-        links.append(row.split('\t')[1])
+        links  .append(row.split('\t')[1])
         artists.append(row.split('\t')[2])
-        titles.append(row.split('\t')[3][:-1])
+        titles .append(row.split('\t')[3][:-1])
 
 start = 0
 end = 100
@@ -24,20 +27,20 @@ end = 100
 for link, title, artist in zip(links[start:end], titles[start:end], artists[start:end]):
     
     if link != "#N/A":
-        print(Fore.RED + "Album already has a link." + Style.RESET_ALL + '\n')
+        print(Fore.RED + "Album already has a link." + Style.RESET_ALL)
         out.append(link + '\n')
         continue
 
     # If artist is specified look for the value in the search
     if len(artist) == 0 :
-        print(Fore.RED + "No artist was specified." + Style.RESET_ALL + '\n')
+        print(Fore.RED + "No artist was specified." + Style.RESET_ALL)
         continue
 
     search = session.search('album', title, 50)
 
     # If no result is returned
     if len(search.albums) == 0 :
-        print(Fore.RED + "Could not find " + title + Style.RESET_ALL + '\n')
+        print(Fore.RED + "Could not find " + title + Style.RESET_ALL)
         continue
 
     print(f"\nLooking for album {title} by {artist} ...")
@@ -54,10 +57,11 @@ for link, title, artist in zip(links[start:end], titles[start:end], artists[star
             print(Fore.GREEN + "FOUND" + Style.RESET_ALL)
             out.append('="Image("' + result.picture(1280,1280) + '")\n')
             found = True
-            continue
+            break
     
     if not found:
-        out.append('NOT FOUND!')
+        out.append('NOT FOUND!\n')
+        input("Press Enter to continue")
 
     print("---------------------------------\n")
     # print(search.albums)
