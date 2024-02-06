@@ -1,13 +1,12 @@
 import tidalapi
 import oauth_login
-
 from colorama import Fore, Back, Style
 
 session = oauth_login.get_tidalapi_session()
-
 albums = tidalapi.Favorites(session, session.user.id).albums()
 
-def find_album_from_title(title, artist=[]):
+
+def find_album_from_title(title, artist):
     '''
     Find the Tidal Album Object from a list of album titles.
 
@@ -18,67 +17,79 @@ def find_album_from_title(title, artist=[]):
     Return:
         A list of album class objects.
     '''
-    
+
     search = session.search('album', title, 100)
     
     # If no result is returned
     if len(search.albums) == 0 :
-        print(Fore.RED + "Could not find " + title + Style.RESET_ALL)
-        print()
-        return
+        print(Fore.RED + "Could not find " + title + Style.RESET_ALL + "\n")
+        return None
     
-    # If artist is specified look for the value in the search
-    if len(artist) != 0 :
-        
-        print(f"\nLooking for album {title} by {artist} ...")
-        print(f"Album{'':30} Artist")
-
-        for alb in search.albums:
-            result = session.get_album(alb.id)
-            print(f"{result.name:30} {result.artist.name}")
-
-            if artist == result.artist.name.lower() and title == result.name.lower() :
-                print(Fore.GREEN + "FOUND" + Style.RESET_ALL)
-                print('"=""Image("' + result.picture(1280,1280) + '")\n')
-                return
-        
-        print("---------------------------------\n")
-        # print(search.albums)
-
-    # If no artist is specified then take the first result
-    else:
-        print("Try again...")
-        
+    # If artist is not specified
+    if not artist:
+        print(Fore.RED + "No artist provided. Returning first output." + Style.RESET_ALL + "\n")
+        return search.albums[0]
     
+    print(f"\nLooking for album {title} by {artist} ...")
+    print(f"{'Album':30} Artist")
+
+    for alb in search.albums:
+        result = session.get_album(alb.id)
+        print(f"{result.name:30} {result.artist.name}")
+
+        if artist.lower() == result.artist.name.lower() and title.lower() == result.name.lower() :
+            print(Fore.GREEN + "FOUND" + Style.RESET_ALL + "\n")
+            return result
+        
+    print(Fore.RED + "Unable to find :(" + Style.RESET_ALL + "\n")
+    return None
 
 
-def get_album_image(fav_albums=albums):
-    '''
-    Writes the link for the album cover of each album class object to the file.
+def cover_formula(album_object):
+    """
+    Creates the formula used in Excel for the album cover.
 
     Params:
-        fav_albums [list]: A list of album class objects. Default is the favorite album library.
+        album_object [tidalapi.models.Album]
+    
+    Return:
+        A string representing the Image formala of the album cover
+    """
+    if album_object:
+        return f'=Image("{album_object.picture(1280,1280)}")\n'
+
+
+def write_album_image(album_objects):
+    '''
+    Writes the formula for the album cover of each album class object to the file.
+
+    Params:
+        album_objects [list<tidalapi.models.Album>]: A list of the album objects.
 
     Return:
-        Output is in the `image_links.txt` file
+        Output is in the `../output/image_links.txt` file
     '''
 
-    print("Writting image cover link in `image_links.txt`...")
+    print("\nWritting image cover link in `../output/image_links.txt`...")
     
-    with open("./image_links.txt",'w') as f:
+    with open("../output/image_links.txt", 'w') as f:
         
         data = ''
-        for a in fav_albums:
-            data += '"=""Image("' + a.picture(1280,1280) + '")\n'
+        for album in album_objects:
+            try:
+                data += cover_formula(album)
+
+            except AssertionError:
+                data += 'Image was not found!\n'
+
+        print(data)
         f.write(data)
 
 
-# list_art = """Psychedelic Porn Crumpets""".split('\n')
-# list_alb = """And Now for the Whatchamacallit""".split('\n')
+if __name__ == '__main__':
+    while(True):
+        list_art = input("Enter Artist:\n").lower()
+        list_alb = input("Enter Album:\n").lower()
 
-while(True):
-    list_art = input("Enter Artist:\n").lower()
-    list_alb = input("Enter Album:\n").lower()
-
-    #get_album_image(find_albums_from_title(list_alb, list_art))
-    find_album_from_title(list_alb, list_art)
+        #write_album_image(find_albums_from_title(list_alb, list_art))
+        print(find_album_from_title(list_alb, list_art))

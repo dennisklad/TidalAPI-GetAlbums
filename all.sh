@@ -1,7 +1,9 @@
+cd source
+
 echo "Following artists..."
-python3 ./source/follow_artists.py
+python3 follow_artists.py
 
 echo "Getting new albums..."
-python3 ./source/new_albums.py
+python3 new_albums.py
 
 # cat image_links.txt
