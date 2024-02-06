@@ -1,0 +1,6 @@
+*.xlsx
+source/*.txt
+source/*.csv
+source/*.tsv
+oauth_logins.csv
+*cache*
